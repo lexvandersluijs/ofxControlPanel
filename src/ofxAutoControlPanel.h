@@ -34,9 +34,11 @@ typedef variadic_<string> variadic;
 class ofxAutoControlPanel : public ofxControlPanel {
 public:
 	string msg;
-	
+	bool respondToKeyboard;
+
 	ofxAutoControlPanel() {
 		msg = "";
+		respondToKeyboard = true;
 		setXMLFilename("settings.xml");
 		ofAddListener(ofEvents().update, this, &ofxAutoControlPanel::update);
 		ofAddListener(ofEvents().draw, this, &ofxAutoControlPanel::draw);
@@ -50,6 +52,11 @@ public:
 	}
 	void setup(int width, int height) {
 		ofxControlPanel::setup("Control Panel", 5, 5, width, height);
+	}
+	void setup(string name, float x, float y, float width, float height, bool respondToKeys) 
+	{
+		respondToKeyboard = respondToKeys;
+		ofxControlPanel::setup(name, x, y, width, height);
 	}
 	void update(ofEventArgs& event) {
 		ofxControlPanel::update();
@@ -76,9 +83,11 @@ public:
 			
 			ofSetColor(255);
 			ofFill();
-			ofRect(ofGetWidth() - 45, ofGetHeight() - 25, 40, 20);
+			// LS: move frame rate counter to bottom left corner instead of bottom right of window,
+			// is better for multi-viewport operation in mapamok (rightmost corner of window is in viewport of projector, not of control-GUI monitor)
+			ofRect(10, ofGetHeight() - 44, 40, 20);
 			ofSetColor(0);
-			ofDrawBitmapString(ofToString((int) ofGetFrameRate()), ofGetWidth() - 40, ofGetHeight() - 10);
+			ofDrawBitmapString(ofToString((int) ofGetFrameRate()), 14, ofGetHeight() - 30);
 			ofPopStyle();
 			glPopAttrib();
 			ofPopMatrix();
@@ -96,15 +105,18 @@ public:
 		return false;
 	}
 	void keyPressed(ofKeyEventArgs& event) {
-		if(event.key == '\t') {
-			if(hidden) {
-				show();
-			} else {
-				hide();
+		if(respondToKeyboard)
+		{
+			if(event.key == '\t') {
+				if(hidden) {
+					show();
+				} else {
+					hide();
+				}
 			}
-		}
-		if(event.key == 'f') {
-			ofToggleFullscreen();
+			if(event.key == 'f') {
+				ofToggleFullscreen();
+			}
 		}
 	}
 	void show() {
